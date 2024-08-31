@@ -1,0 +1,1 @@
+craftSpot project
