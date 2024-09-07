@@ -39,11 +39,17 @@ def create_user(user: schema.UserCreate, db: Session = Depends(database.get_db))
 
 
 @router.put('/role')
-def update_role(db: Session = Depends(database.get_db),
+def update_role(role: schema.UpdateRole, db: Session = Depends(database.get_db),
                 current_user: int = Depends(oauth2.get_current_user)):
     """update user role"""
     role_query = db.query(models.Role).filter(
-        models.Role.user_id == current_user.id
-    ).first()
-    
+        models.Role.user_id == current_user.id)
+
+    if not role_query.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Role Not Found")
+
+    role_query.update(role.model_dump())
+    db.commit()
+    return {"message": "updated successfully"}
 
