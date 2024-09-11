@@ -1,1 +1,1 @@
-craftSpot project
+# CraftSpot
