@@ -56,5 +56,13 @@ def update_role(
     return {"message": "updated successfully"}
 
 
-# @router.get("/me", response_model=schema.UserResponse)
+@router.get("/me", response_model=schema.UserResponse)
 # I need you to create this route
+def get_profile(db: Session = Depends(database.get_db),
+                current_user: int = Depends(oauth2.get_current_user)):
+    """get specific user profile"""
+    profile_query = db.query(models.Profile).filter(models.Profile.user_id == current_user.id)
+    if not profile_query.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="profile not found")
+
+    return profile_query.first()
