@@ -1,5 +1,4 @@
-// src/pages/Register.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../axiosInstance';
 
@@ -13,6 +12,14 @@ const Register = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        // Check if the user is already logged in by checking for the token
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            navigate('/dashboard'); // Redirect to dashboard if the user is already logged in
+        }
+    }, [navigate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;

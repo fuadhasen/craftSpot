@@ -1,6 +1,23 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 const Navbar = () => {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Check if the user is logged in by checking for the token in localStorage
+        const token = localStorage.getItem('authToken');
+        setIsLoggedIn(!!token); // Set isLoggedIn to true if the token exists
+    }, []);
+
+    const handleLogout = () => {
+        // Remove the token from localStorage
+        localStorage.removeItem('authToken');
+        setIsLoggedIn(false);
+        navigate('/login'); // Redirect to login page after logout
+    };
+
     return (
         <nav className="bg-blue-600 bg-gradient-to-r from-blue-600 to-blue-400 text-white shadow-md">
             <div className="container mx-auto flex items-center justify-between py-4 px-6">
@@ -11,10 +28,18 @@ const Navbar = () => {
 
                 {/* Navigation Links */}
                 <div className="hidden md:flex space-x-6">
-                    <Link to="/" className="hover:underline">Home</Link>
-                    <Link to="/services" className="hover:underline">Services</Link>
-                    <Link to="/about" className="hover:underline">About Us</Link>
-                    <Link to="/contact" className="hover:underline">Contact</Link>
+                    {isLoggedIn ? (
+                        <>
+                            <Link to="/dashboard" className="hover:underline">Dashboard</Link>
+                            <button
+                                onClick={handleLogout}
+                                className="hover:underline">
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        <Link to="/login" className="hover:underline">Sign in</Link>
+                    )}
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -27,10 +52,18 @@ const Navbar = () => {
                 {/* Mobile Menu (Hidden on Desktop) */}
                 <div className="md:hidden absolute top-16 left-0 w-full bg-blue-600 bg-gradient-to-r from-blue-600 to-blue-400 text-white">
                     <div className="flex flex-col items-center py-4">
-                        <Link to="/" className="py-2 hover:bg-blue-700 w-full text-center">Home</Link>
-                        <Link to="/services" className="py-2 hover:bg-blue-700 w-full text-center">Services</Link>
-                        <Link to="/about" className="py-2 hover:bg-blue-700 w-full text-center">About Us</Link>
-                        <Link to="/contact" className="py-2 hover:bg-blue-700 w-full text-center">Contact</Link>
+                        {isLoggedIn ? (
+                            <>
+                                <Link to="/dashboard" className="py-2 hover:bg-blue-700 w-full text-center">Dashboard</Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="py-2 hover:bg-blue-700 w-full text-center">
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <Link to="/login" className="py-2 hover:bg-blue-700 w-full text-center">Sign in</Link>
+                        )}
                     </div>
                 </div>
             </div>

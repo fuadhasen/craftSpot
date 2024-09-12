@@ -1,84 +1,101 @@
-// src/pages/Dashboard.jsx
 import { useState, useEffect } from 'react';
-import axiosInstance from '../axiosInstance'; // Import your axios instance
+import { Link, useNavigate } from 'react-router-dom';
+import axiosInstance from '../axiosInstance';
 
-function Dashboard() {
-    const [services, setServices] = useState([]);
-    const [loading, setLoading] = useState(true);
+const Login = () => {
+    const [formData, setFormData] = useState({
+        username: '',
+        password: '',
+    });
     const [error, setError] = useState('');
-    const [role, setRole] = useState('seeker'); // Default role
-    const [userRole, setUserRole] = useState('');
+    const [success, setSuccess] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchServices = async () => {
-            try {
-                const response = await axiosInstance.get(`/services?role=${role}`);
-                setServices(response.data);
-            } catch (err) {
-                setError('Failed to load services.');
-            } finally {
-                setLoading(false);
-            }
-        };
+        // Check if the user is already logged in by checking for the token
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            navigate('/dashboard'); // Redirect to dashboard if the user is already logged in
+        }
+    }, [navigate]);
 
-        fetchServices();
-    }, [role]); // Refetch services when role changes
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
 
-    useEffect(() => {
-        const fetchUserRole = async () => {
-            try {
-                const response = await axiosInstance.get('/user/role'); // Endpoint to get user role
-                setUserRole(response.data.role);
-            } catch (err) {
-                setError('Failed to load user role.');
-            }
-        };
-
-        fetchUserRole();
-    }, []);
-
-    const handleRoleChange = async (newRole) => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
-            await axiosInstance.post('/user/role', { role: newRole }); // Endpoint to update user role
-            setRole(newRole);
-            setUserRole(newRole);
+            const response = await axiosInstance.post(
+                'http://127.0.0.1:8000/api/auth/login',
+                new URLSearchParams({
+                    username: formData.username,
+                    password: formData.password,
+                }),
+                {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                }
+            );
+            const { token } = response.data;
+            // Store the token securely
+            localStorage.setItem('authToken', token);
+            setSuccess('Login successful! Redirecting...');
+            setError(''); // Clear any previous errors
+            setTimeout(() => {
+                navigate('/dashboard'); // Redirect to dashboard after successful login
+            }, 2000);
         } catch (err) {
-            setError('Failed to switch role.');
+            setError(err.response?.data?.detail || 'An error occurred');
+            setSuccess(''); // Clear any previous success messages
         }
     };
 
     return (
-        <div className="min-h-screen p-4 bg-gray-100">
-            <h1 className="text-3xl font-bold mb-4">Services</h1>
-            <div className="mb-4">
-                <button
-                    onClick={() => handleRoleChange('seeker')}
-                    className={`mr-2 px-4 py-2 rounded ${role === 'seeker' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
-                >
-                    Seeker
-                </button>
-                <button
-                    onClick={() => handleRoleChange('provider')}
-                    className={`px-4 py-2 rounded ${role === 'provider' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
-                >
-                    Provider
-                </button>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+            <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Login</h2>
+                {success && <p className="text-green-500 mb-4 text-center">{success}</p>}
+                {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-4">
+                        <label htmlFor="email" className="block text-gray-700">Email Address</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="username"
+                            placeholder="you@example.com"
+                            value={formData.username}
+                            onChange={handleChange}
+                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            required
+                        />
+                    </div>
+                    <div className="mb-6">
+                        <label htmlFor="password" className="block text-gray-700">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="********"
+                            value={formData.password}
+                            onChange={handleChange}
+                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-blue-700 transition duration-300 w-full">
+                        Login
+                    </button>
+                    <p className="mt-4 text-center text-gray-600">
+                        Don{`'`}t have an account? <Link to="/register" className="text-blue-600 hover:underline">Register</Link>
+                    </p>
+                </form>
             </div>
-            {loading && <p>Loading...</p>}
-            {error && <p className="text-red-500">{error}</p>}
-            {services.length === 0 && !loading && <p>No services available.</p>}
-            {services.length > 0 && (
-                <ul className="space-y-4">
-                    {services.map(service => (
-                        <li key={service.id} className="bg-white p-4 rounded shadow">
-                            <h2 className="text-xl font-semibold">{service.name}</h2>
-                            <p className="text-gray-600">{service.description}</p>
-                        </li>
-                    ))}
-                </ul>
-            )}
         </div>
     );
-}
+};
 
-export default Dashboard;
+export default Login;
