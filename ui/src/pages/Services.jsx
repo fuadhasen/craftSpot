@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { FaSearch } from "react-icons/fa";
 import Navbar from "../components/Navbar";
+import axiosInstance from "../axiosInstance";
 
 function Services() {
     const [services, setServices] = useState([]);
@@ -11,11 +13,13 @@ function Services() {
         const fetchServices = async () => {
             setLoading(true);
             try {
-                const response = await fetch('/api/services'); // Adjust the API endpoint accordingly
-                const data = await response.json();
+                const response = await axiosInstance.get('/api/services/');
+                const data = response.data;
+
+
                 setServices(data);
             } catch (err) {
-                // console.error("Error fetching services:", error);
+                console.error("Error fetching services:", err);
             }
             setLoading(false);
         };
@@ -40,21 +44,17 @@ function Services() {
                 <p className="text-lg text-gray-600 mt-4 mx-4">
                     Find skilled professionals for your home and business needs.
                 </p>
-                <div className="grid grid-cols-1 gap-4 mt-8">
-                    <form className="relative grid grid-cols-1 mx-4" onSubmit={handleSearch}>
+                <div className="grid grid-cols-1 gap-4 mt-8 mx-4">
+                    <form className="flex p-1 rounded-md border-2 items-center focus-within:border-blue-600 justify-between" onSubmit={handleSearch}>
                         <input
                             type="text"
                             placeholder="Search for services"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full col-span-12 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 pr-16"
+                            className="flex-1 focus:outline-none"
                         />
-                        <button
-                            type="submit"
-                            className="absolute right-0 top-0 bg-blue-600 h-full p-2 text-white rounded-lg"
-                        >
-                            Search
-                        </button>
+                        <FaSearch className="text-stone-400" />
+
                     </form>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">

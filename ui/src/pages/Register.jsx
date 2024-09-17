@@ -29,7 +29,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axiosInstance.post('/api/user/register', formData);
+            await axiosInstance.post('/api/users/register', formData);
             setSuccess('Registration successful! Redirecting to login...');
             setError(''); // Clear any previous errors
             setTimeout(() => {
