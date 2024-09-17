@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
 import electrician from "../assets/electrician.svg";
@@ -24,9 +24,11 @@ const Home = () => {
                         <p className="text-lg text-gray-600 mb-6">
                             Easily connect with trusted professionals for your home and business needs.
                         </p>
-                        <button onClick={handleGetStarted} className="bg-blue-600 bg-gradient-to-r from-blue-600 to-blue-400 text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:bg-blue-700 transition duration-300">
-                            Get Started
-                        </button>
+
+
+                        <Link to="services" className="bg-blue-600 bg-gradient-to-r from-blue-600 to-blue-400 text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:bg-blue-700 transition duration-300">
+                            Browse Services
+                        </Link>
                     </div>
 
                     {/* Image Section */}

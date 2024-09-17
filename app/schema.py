@@ -63,15 +63,16 @@ class CreateProfile(BaseModel):
 
 class CreateService(BaseModel):
     """service create validation"""
+    service_name: str
+    service_description: str
+    service_price: float
+    service_location: str
+    latitude: Optional[float] = None 
+    longitude: Optional[float] = None
+    service_picture: str
+    service_category: str
 
-    service_type: str
-    description: str
-    location: str
-    available: bool
 
-
-class ServiceResponse(CreateService):
-    """service response with review"""
 
 
 class Review(BaseModel):
@@ -81,10 +82,19 @@ class Review(BaseModel):
     comment: str
     service_id: int
 
+class ServiceResponse(CreateService):
+    """service response with reviews"""
+    id: int
+    rating: str
+    reviews: Optional[Review] = None
 
 class CreateBooking(BaseModel):
     """booking validation"""
 
-    status: str
-    schedule_time: datetime
     service_id: int
+    booking_date: datetime
+    booking_time: datetime
+    booking_location: str
+    latitude: Optional[float] = None 
+    longitude: Optional[float] = None
+    booking_price: float
