@@ -2,29 +2,68 @@ import { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import axiosInstance from "../axiosInstance";
+import { Link } from "react-router-dom";
+
+const data = [
+    {
+        id: 1,
+        name: "Plumbing",
+        description: "Get your plumbing issues fixed by professionals.",
+        image_url: "https://via.placeholder.com/300",
+        user: {
+            id: 1,
+            name: "John Doe",
+            profile_image: "https://via.placeholder.com/150",
+        }
+    },
+    {
+        id: 2,
+        name: "Electrical",
+        description: "Electrical services for your home and office.",
+        image_url: "https://via.placeholder.com/300",
+        user: {
+            id: 2,
+            name: "Jane Doe",
+            profile_image: "https://via.placeholder.com/150"
+        }
+    },
+    {
+        id: 3,
+        name: "Cleaning",
+        description: "Professional cleaning services for your home.",
+        image_url: "https://via.placeholder.com/300",
+        user: {
+            id: 3,
+            name: "Alice",
+            profile_image: "https://via.placeholder.com/150"
+        }
+    },
+]
 
 function Services() {
-    const [services, setServices] = useState([]);
+    // const [services, setServices] = useState([]);
+
+    const [services, setServices] = useState(data);
     const [searchQuery, setSearchQuery] = useState("");
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     // Fetch services from the backend
-    useEffect(() => {
-        const fetchServices = async () => {
-            setLoading(true);
-            try {
-                const response = await axiosInstance.get('/api/services/');
-                const data = response.data;
+    // useEffect(() => {
+    //     const fetchServices = async () => {
+    //         setLoading(true);
+    //         try {
+    //             const response = await axiosInstance.get('/api/services/');
+    //             const data = response.data;
 
 
-                setServices(data);
-            } catch (err) {
-                console.error("Error fetching services:", err);
-            }
-            setLoading(false);
-        };
-        fetchServices();
-    }, []);
+    //             setServices(data);
+    //         } catch (err) {
+    //             console.error("Error fetching services:", err);
+    //         }
+    //         setLoading(false);
+    //     };
+    //     fetchServices();
+    // }, []);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -57,24 +96,27 @@ function Services() {
 
                     </form>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
                     {loading ? (
                         <p className="mx-4">Loading services...</p>
                     ) : (
                         services.length > 0 ? (
                             services.map((service) => (
-                                <div key={service.id} className="bg-white rounded-lg shadow-lg p-4">
-                                    <img
-                                        src={service.image_url || "https://via.placeholder.com/300"}
-                                        alt={service.name}
-                                        className="w-full h-40 object-cover rounded-lg"
-                                    />
-                                    <h2 className="text-xl font-semibold mt-4">{service.name}</h2>
-                                    <p className="text-gray-600 mt-2">{service.description}</p>
-                                    <button className="bg-blue-600 text-white px-4 py-2 rounded-lg mt-4">
-                                        Book Now
-                                    </button>
-                                </div>
+                                <Link key={service.id} className="group rounded-md" to={`${service.id}`}>
+                                    <div className="bg-white rounded-lg shadow-lg p-4">
+                                        <img
+                                            src={service.image_url || "https://via.placeholder.com/300"}
+                                            alt={service.name}
+                                            className="w-full h-40 object-cover rounded-lg"
+                                        />
+                                        <div className="flex items-center justify-between">
+                                            <h2 className="text-xl font-semibold mt-4">{service.name}</h2>
+                                            <p className=" text-gray-600 mt-4">By <span className="font-bold">{service.user.name}</span></p>
+                                        </div>
+                                        <p className="text-gray-600 mt-1 truncate group-hover:text-gray-900 group-hover:underline">{service.description}</p>
+                                    </div>
+                                </Link>
+
                             ))
                         ) : (
                             <p className="mx-4">No services found.</p>
