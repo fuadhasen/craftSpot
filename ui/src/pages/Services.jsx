@@ -3,6 +3,7 @@ import { FaSearch } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import axiosInstance from "../axiosInstance";
 import { Link } from "react-router-dom";
+import Loading from "../components/Loading";
 
 const data = [
     {
@@ -98,7 +99,7 @@ function Services() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
                     {loading ? (
-                        <p className="mx-4">Loading services...</p>
+                        <Loading />
                     ) : (
                         services.length > 0 ? (
                             services.map((service) => (

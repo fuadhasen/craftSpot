@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axiosInstance from "../axiosInstance";
+import Loading from "../components/Loading";
+import ServiceLocation from "../components/ServiceLocation";
 
 /**
  * service_name: str
@@ -31,39 +33,53 @@ function ServiceDetail() {
     const [service, setService] = useState(service_data);
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        const fetchService = async () => {
-            setLoading(true);
-            try {
-                const response = await axiosInstance.get(`/api/services/${id}/`);
-                const data = response.data;
-                setService(data);
-            } catch (err) {
-                console.error("Error fetching service:", err);
-            }
-            setLoading(false);
-        }
+    //     const fetchService = async () => {
+    //         setLoading(true);
+    //         try {
+    //             const response = await axiosInstance.get(`/api/services/${id}/`);
+    //             const data = response.data;
+    //             setService(data);
+    //         } catch (err) {
+    //             console.error("Error fetching service:", err);
+    //         }
+    //         setLoading(false);
+    //     }
 
-        fetchService();
-    }, [id]);
+    //     fetchService();
+    // }, [id]);
     return (
 
-        <div className="">
+        <div className="min-h-screen">
             {loading ? (
-                <p>Loading...</p>
+                <div className="container mx-auto px-4 py-8 text-center">
+                    <Loading />
+                    <Link to="/services" className="text-blue-600 hover:underline mt-8 inline-block">
+                        Back to services
+                    </Link>
+                </div>
             ) : (
-                <div>
-                    <h1>{service.service_name}</h1>
-                    <p>{service.service_description}</p>
-                    <p>Price: {service.service_price}</p>
-                    <p>Location: {service.service_location}</p>
-                    <p>Category: {service.service_category}</p>
-                    <img src={service.service_picture} alt={service.service_name} />
+                <div className="container mx-auto px-4 py-8 flex">
+                    <div className="bg-white rounded-lg shadow-lg p-6">
+                        <img
+                            src={service.service_picture || "https://via.placeholder.com/600"}
+                            alt={service.service_name}
+                            className="w-full h-60 object-cover rounded-lg"
+                        />
+                        <h1 className="text-4xl font-bold text-gray-900 mt-6">{service.service_name}</h1>
+                        <p className="text-lg text-gray-600 mt-4">{service.service_description}</p>
+                        <p className="text-lg text-gray-600 mt-2">Price: <span className="font-semibold">{service.service_price}</span></p>
+                        <p className="text-lg text-gray-600 mt-2">Location: <span className="font-semibold">{service.service_location}</span></p>
+                        <p className="text-lg text-gray-600 mt-2">Category: <span className="font-semibold">{service.service_category}</span></p>
+                    </div>
+                    <ServiceLocation
+                        service={service}
+                    />
                 </div>
             )}
-            <Link to="/services">Back to services</Link>
         </div>
+
     )
 }
 

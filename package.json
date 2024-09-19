@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@vis.gl/react-google-maps": "^1.2.0",
+    "react-leaflet": "^4.2.1"
+  }
+}
