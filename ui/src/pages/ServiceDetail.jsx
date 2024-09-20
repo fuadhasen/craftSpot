@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import axiosInstance from "../axiosInstance";
 import Loading from "../components/Loading";
 import ServiceLocation from "../components/ServiceLocation";
+import Navbar from "../components/Navbar";
 
 /**
  * service_name: str
@@ -20,8 +21,8 @@ const service_data = {
     service_description: "Electrical services for your home and office.",
     service_price: 100.00,
     service_location: "Lagos",
-    latitude: 6.5244,
-    longitude: 3.3792,
+    latitude: 34.0411829,
+    longitude: -4.9870592,
     service_picture: "https://via.placeholder.com/300",
     service_category: "Electrical"
 
@@ -51,17 +52,18 @@ function ServiceDetail() {
     // }, [id]);
     return (
 
-        <div className="min-h-screen">
+        <div className="min-h-screen flex flex-col">
+            <Navbar />
             {loading ? (
-                <div className="container mx-auto px-4 py-8 text-center">
+                <div className="container mx-auto px-4 py-8 text-center flex-1">
                     <Loading />
                     <Link to="/services" className="text-blue-600 hover:underline mt-8 inline-block">
                         Back to services
                     </Link>
                 </div>
             ) : (
-                <div className="container mx-auto px-4 py-8 flex">
-                    <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="container mx-auto px-4 py-8 flex flex-1">
+                    <div className="bg-white rounded-l-lg shadow-lg border-l-2 border-t-2 border-b-2 p-6">
                         <img
                             src={service.service_picture || "https://via.placeholder.com/600"}
                             alt={service.service_name}

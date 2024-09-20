@@ -6,74 +6,50 @@ import { Link } from "react-router-dom";
 import Loading from "../components/Loading";
 
 const data = [
-    {
-        id: 1,
-        name: "Plumbing",
-        description: "Get your plumbing issues fixed by professionals.",
-        image_url: "https://via.placeholder.com/300",
-        user: {
-            id: 1,
-            name: "John Doe",
-            profile_image: "https://via.placeholder.com/150",
-        }
-    },
-    {
-        id: 2,
-        name: "Electrical",
-        description: "Electrical services for your home and office.",
-        image_url: "https://via.placeholder.com/300",
-        user: {
-            id: 2,
-            name: "Jane Doe",
-            profile_image: "https://via.placeholder.com/150"
-        }
-    },
-    {
-        id: 3,
-        name: "Cleaning",
-        description: "Professional cleaning services for your home.",
-        image_url: "https://via.placeholder.com/300",
-        user: {
-            id: 3,
-            name: "Alice",
-            profile_image: "https://via.placeholder.com/150"
-        }
-    },
-]
+    // Sample data (same as before)
+];
 
 function Services() {
-    // const [services, setServices] = useState([]);
-
-    const [services, setServices] = useState(data);
+    const [services, setServices] = useState(data); // All available services
+    const [visibleServices, setVisibleServices] = useState([]); // Currently visible services
     const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1); // Track current page for pagination
+    const servicesPerPage = 3;
 
-    // Fetch services from the backend
-    // useEffect(() => {
-    //     const fetchServices = async () => {
-    //         setLoading(true);
-    //         try {
-    //             const response = await axiosInstance.get('/api/services/');
-    //             const data = response.data;
+    // Load more services when user scrolls to the bottom
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 2) {
+                loadMoreServices();
+            }
+        };
 
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [visibleServices]); // Update scroll listener when services change
 
-    //             setServices(data);
-    //         } catch (err) {
-    //             console.error("Error fetching services:", err);
-    //         }
-    //         setLoading(false);
-    //     };
-    //     fetchServices();
-    // }, []);
+    // Load the initial set of services
+    useEffect(() => {
+        loadMoreServices();
+    }, []);
+
+    const loadMoreServices = () => {
+        setLoading(true);
+        const nextPage = page + 1;
+        const newVisibleServices = services.slice(0, nextPage * servicesPerPage);
+        setVisibleServices(newVisibleServices);
+        setPage(nextPage);
+        setLoading(false);
+    };
 
     const handleSearch = (e) => {
         e.preventDefault();
-        // Optionally implement search filtering on the services
-        // or send the search query to the backend
         const filteredServices = services.filter(service =>
             service.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
-        setServices(filteredServices);
+        setVisibleServices(filteredServices.slice(0, servicesPerPage)); // Reset pagination on search
+        setPage(1);
     };
 
     return (
@@ -94,15 +70,14 @@ function Services() {
                             className="flex-1 focus:outline-none"
                         />
                         <FaSearch className="text-stone-400" />
-
                     </form>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
                     {loading ? (
                         <Loading />
                     ) : (
-                        services.length > 0 ? (
-                            services.map((service) => (
+                        visibleServices.length > 0 ? (
+                            visibleServices.map((service) => (
                                 <Link key={service.id} className="group rounded-md" to={`${service.id}`}>
                                     <div className="bg-white rounded-lg shadow-lg p-4">
                                         <img
@@ -117,7 +92,6 @@ function Services() {
                                         <p className="text-gray-600 mt-1 truncate group-hover:text-gray-900 group-hover:underline">{service.description}</p>
                                     </div>
                                 </Link>
-
                             ))
                         ) : (
                             <p className="mx-4">No services found.</p>
