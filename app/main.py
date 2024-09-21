@@ -27,9 +27,7 @@ app.include_router(auth.router)
 app.include_router(profile.router)
 app.include_router(service.router)
 app.include_router(booking.router)
-# app.include_router(profile.router)
-# app.include_router(booking.router)
-# app.include_router(services.router)
+
 
 
 @app.get("/")
