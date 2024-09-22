@@ -28,6 +28,7 @@ const Navbar = () => {
 
                 {/* Navigation Links */}
                 <div className="hidden md:flex space-x-6">
+                    <Link to="/services" className="hover:underline">Services</Link>
                     {isLoggedIn ? (
                         <>
                             <Link to="/dashboard" className="hover:underline">Dashboard</Link>
