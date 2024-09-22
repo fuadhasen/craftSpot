@@ -60,6 +60,8 @@ class CreateProfile(BaseModel):
     profile_picture: str  # Optional[HttpUrl] = None
     contact_info: str
 
+class ProfileResponse(CreateProfile):
+    pass
 
 class CreateService(BaseModel):
     """service create validation"""
