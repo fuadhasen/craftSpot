@@ -56,7 +56,7 @@ def update_role(
     return {"message": "updated successfully"}
 
 
-@router.get("/me", response_model=schema.UserResponse)
+@router.get("/me", response_model=schema.ProfileResponse)
 # I need you to create this route
 def get_profile(db: Session = Depends(database.get_db),
                 current_user: int = Depends(oauth2.get_current_user)):
