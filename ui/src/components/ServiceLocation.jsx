@@ -12,9 +12,8 @@ L.Icon.Default.mergeOptions({
 
 const ServiceLocation = ({ service }) => {
     const position = [service.latitude, service.longitude];
-
     return (
-        <div className='flex-1 p-3 rounded-r shadow-lg border-t-2 border-r-2 border-b-2'>
+        <div className='flex-1 p-3 rounded-r shadow-lg border-t-2 border-r-2 border-b-2 z-40'>
             <MapContainer center={position} zoom={13} style={{ height: '100%', width: '100%' }}>
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -22,12 +21,13 @@ const ServiceLocation = ({ service }) => {
                 />
                 <Marker position={position}>
                     <Popup>
-                        A pretty CSS3 popup. <br /> Easily customizable.
+                        <b>{service.name}</b> <br /> By {service.user.name}
                     </Popup>
                 </Marker>
             </MapContainer>
         </div>
     );
 };
+
 
 export default ServiceLocation;

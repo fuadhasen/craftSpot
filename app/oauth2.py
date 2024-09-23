@@ -27,6 +27,7 @@ def create_token(data: dict):
 def verify_token(token: str, credential_exception):
     """verify access token"""
     try:
+        print(token)
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         id: str = str(payload.get("user_id"))
         if not id:

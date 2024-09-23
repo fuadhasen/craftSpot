@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../axiosInstance';
 import Navbar from '../components/Navbar';
 
@@ -11,14 +11,18 @@ const Login = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Check if there's a previous page to redirect to
+    const from = location.state?.from?.pathname || '/me'; // Default to dashboard if no previous page
 
     useEffect(() => {
         // Check if the user is already logged in by checking for the token
         const token = localStorage.getItem('authToken');
         if (token) {
-            navigate('/dashboard'); // Redirect to dashboard if the user is already logged in
+            navigate(from, { replace: true }); // Redirect to previous page or dashboard if already logged in
         }
-    }, [navigate]);
+    }, [navigate, from]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -46,7 +50,7 @@ const Login = () => {
             setSuccess('Login successful! Redirecting...');
             setError(''); // Clear any previous errors
             setTimeout(() => {
-                navigate('/dashboard'); // Redirect to dashboard after successful login
+                navigate(from, { replace: true }); // Redirect to previous page or dashboard after successful login
             }, 2000);
         } catch (err) {
             setError(err.response?.data?.detail || 'An error occurred');
@@ -99,7 +103,6 @@ const Login = () => {
                 </div>
             </div>
         </div>
-
     );
 };
 

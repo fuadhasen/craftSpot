@@ -17,8 +17,6 @@ def create_services(
     current_user: int = Depends(oauth2.get_current_user),
 ):
     """create service"""
-    # check if current user has already this service
-
     service_query = db.query(models.Service).filter(
         models.Service.user_id == current_user.id,
         models.Service.type == service_data.type,
@@ -132,3 +130,29 @@ def get_services(
         )
 
     return service_query.offset(skip).limit(limit).all()
+
+
+@router.post("/{id}/book", status_code=status.HTTP_201_CREATED)
+def book_service(
+    id: int,
+    booking_data: schemas.BookingCreate,
+    db: Session = Depends(database.get_db),
+    current_user: int = Depends(oauth2.get_current_user),
+):
+    """book a service"""
+    service_query = db.query(models.Service).filter(models.Service.id == id)
+    if not service_query.first():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Service not found"
+        )
+
+    booking = models.Booking(
+        **booking_data.model_dump(),
+        user_id=current_user.id,
+        service_id=id,
+    )
+    db.add(booking)
+    db.commit()
+    db.refresh(booking)
+
+    return booking

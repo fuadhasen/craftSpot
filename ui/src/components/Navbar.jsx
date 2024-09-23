@@ -31,7 +31,7 @@ const Navbar = () => {
                     <Link to="/services" className="hover:underline">Services</Link>
                     {isLoggedIn ? (
                         <>
-                            <Link to="/dashboard" className="hover:underline">Dashboard</Link>
+                            <Link to="/me" className="hover:underline">Dashboard</Link>
                             <button
                                 onClick={handleLogout}
                                 className="hover:underline">

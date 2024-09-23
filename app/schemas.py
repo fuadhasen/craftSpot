@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -36,14 +36,13 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     """userResponse validation"""
 
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     email: str
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        orm_mode = True
 
 
 class ProfileUpdate(BaseModel):
@@ -58,14 +57,13 @@ class ProfileUpdate(BaseModel):
 class ProfileResponse(BaseModel):
     """profile response validation"""
 
+    model_config = ConfigDict(from_attributes=True)
+
     id: Optional[int]
     bio: Optional[str]
     addresse: Optional[str]
     picture: Optional[str]
     phone: Optional[str]
-
-    class Config:
-        orm_mode = True
 
 
 class ServiceCreate(BaseModel):
@@ -75,6 +73,7 @@ class ServiceCreate(BaseModel):
     type: str
     image: str
     description: str
+    pricing: float
     location: str
     latitude: float
     longitude: float
@@ -88,6 +87,7 @@ class ServiceUpdate(BaseModel):
     type: Optional[str]
     image: Optional[str]
     description: Optional[str]
+    pricing: Optional[float]
     location: Optional[str]
     latitude: Optional[float]
     longitude: Optional[float]
@@ -97,40 +97,40 @@ class ServiceUpdate(BaseModel):
 class ServiceResponse(BaseModel):
     """service response validation"""
 
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     type: str
     image: str
     description: str
+    pricing: Optional[float]
     location: str
     latitude: float
     longitude: float
     available: bool
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        orm_mode = True
+    user: UserResponse
 
 
 class BookingCreate(BaseModel):
     """booking create validation"""
 
     schedule_time: datetime
-    service_id: int
 
 
 class BookingUpdate(BaseModel):
     """booking update validation"""
 
-    status: Optional[models.Status]
-    schedule_time: Optional[datetime]
-    rating: Optional[int]
+    rating: Optional[models.Rating]
     review: Optional[str]
 
 
 class BookingResponse(BaseModel):
     """booking response validation"""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     status: models.Status
@@ -140,6 +140,3 @@ class BookingResponse(BaseModel):
     created_at: str
     user_id: int
     service_id: int
-
-    class Config:
-        orm_mode = True

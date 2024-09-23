@@ -1,8 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app import models
-from app.database import engine
+from app.database import engine, get_db
 from app.router import users, service, booking
+from sqlalchemy.orm import Session
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -25,6 +26,8 @@ app.include_router(booking.router)
 
 
 @app.get("/")
-def root():
+def root(db: Session = Depends(get_db)):
     """root function"""
-    return {"message": "Hello craftSpot"}
+    users = db.query(models.User).all()
+    return users
+    # return {"message": "Hello craftSpot"}

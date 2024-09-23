@@ -1,7 +1,7 @@
 from fastapi import status, HTTPException, Depends, APIRouter
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-
+from typing import List
 from app import database, models, schemas, utils, oauth2
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
@@ -102,3 +102,37 @@ def get_me(
         )
 
     return user
+
+
+@router.get(
+    "/me/services",
+    status_code=status.HTTP_200_OK,
+    response_model=List[schemas.ServiceResponse],
+)
+def get_my_services(
+    db: Session = Depends(database.get_db),
+    current_user: int = Depends(oauth2.get_current_user),
+):
+    """Get current user services"""
+    services = (
+        db.query(models.Service).filter(models.Service.user_id == current_user.id).all()
+    )
+    print(services)
+    return services
+
+
+@router.get(
+    "/me/bookings",
+    status_code=status.HTTP_200_OK,
+    response_model=List[schemas.BookingResponse],
+)
+def get_my_bookings(
+    db: Session = Depends(database.get_db),
+    current_user: int = Depends(oauth2.get_current_user),
+):
+    """Get current user bookings"""
+    bookings = (
+        db.query(models.Booking).filter(models.Booking.user_id == current_user.id).all()
+    )
+    print(bookings)
+    return bookings

@@ -67,6 +67,7 @@ class Service(Base):
     type = Column(String(100), nullable=False)
     image = Column(String(200), nullable=True)
     description = Column(String(500), nullable=True)
+    pricing = Column(Float, nullable=False)
     location = Column(String(200), nullable=False)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
@@ -112,7 +113,7 @@ class Booking(Base):
     __tablename__ = "bookings"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    status = Column(Enum(Status), nullable=False)
+    status = Column(Enum(Status), default=Status.pending)
     schedule_time = Column(TIMESTAMP(timezone=True), nullable=False)
     rating = Column(Enum(Rating), nullable=True)
     review = Column(String, nullable=True)
