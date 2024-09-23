@@ -1,18 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .router import users, auth, profile, service, booking
-from . import models
-from .database import engine
+from app import models
+from app.database import engine
+from app.router import users, service, booking
 
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-origins = [
-    # "http://localhost:5173",
-    "*"
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,11 +20,8 @@ app.add_middleware(
 )
 
 app.include_router(users.router)
-app.include_router(auth.router)
-app.include_router(profile.router)
 app.include_router(service.router)
 app.include_router(booking.router)
-
 
 
 @app.get("/")

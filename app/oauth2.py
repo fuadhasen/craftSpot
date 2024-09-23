@@ -1,23 +1,23 @@
 from jose import JWTError, jwt
-from datetime import datetime, timedelta
-from . import schema, database, models
+from datetime import datetime, timedelta, UTC
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from .config import setting
+from app import database, models, schemas
+from app.config import settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/users/login")
 
 
-SECRET_KEY = setting.secret_key
-ALGORITHM = setting.algorithm
-ACCESS_TOKEN_EXPIRE_MINUTES = setting.access_token_expire_minutes
+SECRET_KEY = settings.secret_key
+ALGORITHM = settings.algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 
 
 def create_token(data: dict):
     """create access token"""
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
 
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -27,12 +27,11 @@ def create_token(data: dict):
 def verify_token(token: str, credential_exception):
     """verify access token"""
     try:
-        # extract payload data
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         id: str = str(payload.get("user_id"))
         if not id:
             raise credential_exception
-        token_data = schema.TokenData(id=id)
+        token_data = schemas.TokenData(id=id)
     except JWTError:
         raise credential_exception
     return token_data

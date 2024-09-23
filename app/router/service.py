@@ -1,61 +1,56 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
-from .. import schema, database, models, utils, oauth2
+from fastapi import status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
+from app import database, models, schemas, oauth2
 
 router = APIRouter(prefix="/api/services", tags=["Services"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.ServiceResponse,
+)
 def create_services(
-    service: schema.CreateService,
+    service_data: schemas.ServiceCreate,
     db: Session = Depends(database.get_db),
     current_user: int = Depends(oauth2.get_current_user),
 ):
     """create service"""
-    service_query = (
-        db.query(models.Service)
-        .filter(
-            models.Service.user_id == current_user.id,
-            models.Service.service_type == service.service_type,
-        )
-        .first()
+    # check if current user has already this service
+
+    service_query = db.query(models.Service).filter(
+        models.Service.user_id == current_user.id,
+        models.Service.type == service_data.type,
     )
-    if service_query:
+
+    if service_query.first():
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Service Already exist"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Service already exists.",
         )
 
-    role_query = (
-        db.query(models.Role).filter(models.Role.user_id == current_user.id).first()
-    )
-    if role_query.role != "provider":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="provider can only create service",
-        )
-    _dict = service.model_dump()
-    _dict["user_id"] = current_user.id
-    new_service = models.Service(**_dict)
+    service = models.Service(**service_data.model_dump(), user_id=current_user.id)
 
-    db.add(new_service)
+    db.add(service)
     db.commit()
-    db.refresh(new_service)
+    db.refresh(service)
 
-    return {"service": new_service}
+    return service
 
 
-@router.put("/{id}")
+@router.put(
+    "/{id}",
+    response_model=schemas.ServiceResponse,
+    status_code=status.HTTP_200_OK,
+)
 def update_service(
     id: int,
-    service: schema.CreateService,
+    service_data: schemas.ServiceUpdate,
     db: Session = Depends(database.get_db),
     current_user: int = Depends(oauth2.get_current_user),
 ):
     """Update an existing profile"""
-    # user = db.query(models.User).filter(models.User.id == current_user.id).first()
-    # if not user:
-    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     service_query = db.query(models.Service).filter(models.Service.id == id)
     if not service_query.first():
@@ -68,22 +63,22 @@ def update_service(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not Authorized"
         )
 
-    service_query.update(service.model_dump())
+    service_query.update(service_data.model_dump(exclude_unset=True))
     db.commit()
 
     return service_query.first()
 
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 def delete_service(
     id: int,
     db: Session = Depends(database.get_db),
     current_user: int = Depends(oauth2.get_current_user),
 ):
-    """delete an existing profile"""
-    # user = db.query(models.User).filter(models.User.id == current_user.id).first()
-    # if not user:
-    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    """delete service"""
 
     service_query = db.query(models.Service).filter(models.Service.id == id)
     if not service_query.first():
@@ -99,10 +94,12 @@ def delete_service(
     service_query.delete()
     db.commit()
 
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-
-@router.get("/{id}")
+@router.get(
+    "/{id}",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.ServiceResponse,
+)
 def get_service(id: int, db: Session = Depends(database.get_db)):
     """get specific service service"""
     service_query = db.query(models.Service).filter(models.Service.id == id)
@@ -114,7 +111,11 @@ def get_service(id: int, db: Session = Depends(database.get_db)):
     return service_query.first()
 
 
-@router.get("/")
+@router.get(
+    "/",
+    status_code=status.HTTP_200_OK,
+    response_model=List[schemas.ServiceResponse],
+)
 def get_services(
     db: Session = Depends(database.get_db),
     limit: int = 3,
@@ -123,7 +124,7 @@ def get_services(
 ):
     """get service by service type"""
     service_query = db.query(models.Service).filter(
-        models.Service.service_type.contains(search)
+        models.Service.type.contains(search)
     )
     if not service_query.first():
         raise HTTPException(

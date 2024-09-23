@@ -11,9 +11,13 @@ function Dashboard() {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                // Assuming there's an endpoint that returns the logged-in user info
-                const userResponse = await axiosInstance.get('/api/user/me');
-                console.log(userResponse.data);
+                const userResponse = await axiosInstance.get('/users/me',
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+                        },
+                    }
+                );
                 setUser(userResponse.data);
             } catch (err) {
                 setError('Failed to load user data.');
@@ -22,12 +26,9 @@ function Dashboard() {
 
         const fetchServices = async () => {
             try {
-                let endpoint = '/api/services';
-                if (user?.current_role === 'provider') {
-                    endpoint = '/api/services/my-services'; // Adjust this to your provider-specific endpoint
-                }
-                const response = await axiosInstance.get(endpoint);
-                setServices(response.data);
+                const servicesResponse = await axiosInstance.get('/services');
+                console.log(servicesResponse.data);
+                setServices(servicesResponse.data);
             } catch (err) {
                 setError('Failed to load services.');
             } finally {
@@ -39,7 +40,7 @@ function Dashboard() {
         if (user) {
             fetchServices();
         }
-    }, [user]);
+    }, []);
 
     return (
         <div>

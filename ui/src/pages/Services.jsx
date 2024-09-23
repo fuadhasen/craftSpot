@@ -17,21 +17,21 @@ function Services() {
     const [page, setPage] = useState(1); // Track current page for pagination
     const servicesPerPage = 3;
 
-    // Load more services when user scrolls to the bottom
     useEffect(() => {
-        const handleScroll = () => {
-            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 2) {
-                loadMoreServices();
+        const fetchServices = async () => {
+            setLoading(true);
+            try {
+                const response = await axiosInstance.get("/services");
+                setServices(response.data);
+                setVisibleServices(response.data.slice(0, servicesPerPage));
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
             }
         };
 
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [visibleServices]); // Update scroll listener when services change
-
-    // Load the initial set of services
-    useEffect(() => {
-        loadMoreServices();
+        fetchServices();
     }, []);
 
     const loadMoreServices = () => {
@@ -82,7 +82,7 @@ function Services() {
                                     <div className="bg-white rounded-lg shadow-lg p-4">
                                         <img
                                             src={service.image_url || "https://via.placeholder.com/300"}
-                                            alt={service.name}
+                                            alt={service.type}
                                             className="w-full h-40 object-cover rounded-lg"
                                         />
                                         <div className="flex items-center justify-between">

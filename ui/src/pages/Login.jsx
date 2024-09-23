@@ -29,7 +29,7 @@ const Login = () => {
         e.preventDefault();
         try {
             const response = await axiosInstance.post(
-                'http://127.0.0.1:8000/login',
+                '/users/login',
                 new URLSearchParams({
                     username: formData.username,
                     password: formData.password,
