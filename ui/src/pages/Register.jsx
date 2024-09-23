@@ -8,7 +8,7 @@ const Register = () => {
         name: '',
         email: '',
         password: '',
-        role: 'seeker',  // default role
+        confirm_password: '',
     });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -25,12 +25,19 @@ const Register = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Validate the password and confirm password
+        if (formData.password !== formData.confirm_password) {
+            setError('Passwords do not match.');
+            setSuccess(''); // Clear any previous success messages
+            return;
+        }
         try {
-            await axiosInstance.post('/api/users/register', formData);
+            await axiosInstance.post('/users/register', formData);
             setSuccess('Registration successful! Redirecting to login...');
             setError(''); // Clear any previous errors
             setTimeout(() => {
@@ -88,18 +95,19 @@ const Register = () => {
                                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-500"
                             />
                         </div>
+                        {/* Confirm password */}
                         <div>
-                            <label className="block text-sm font-medium">Role</label>
-                            <select
-                                name="role"
-                                value={formData.role}
+                            <label className="block text-sm font-medium">Confirm password</label>
+                            <input
+                                type="password"
+                                name="confirm_password"
+                                value={formData.confirm_password}
                                 onChange={handleChange}
+                                required
                                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-500"
-                            >
-                                <option value="seeker">Seeker</option>
-                                <option value="provider">Provider</option>
-                            </select>
+                            />
                         </div>
+
                         <button
                             type="submit"
                             className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition duration-300"

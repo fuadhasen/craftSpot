@@ -1,14 +1,18 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
-from .. import schema, database, models, utils, oauth2
+from fastapi import status, HTTPException, Depends, APIRouter
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-router = APIRouter(prefix="/api/user", tags=["users"])
+from app import database, models, schemas, utils, oauth2
+
+router = APIRouter(prefix="/api/users", tags=["Users"])
 
 
 @router.post(
-    "/register", status_code=status.HTTP_201_CREATED, response_model=schema.UserResponse
+    "/register",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.UserResponse,
 )
-def create_user(user: schema.UserCreate, db: Session = Depends(database.get_db)):
+def create_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
     """route for creating user"""
     user_query = db.query(models.User).filter(models.User.email == user.email).first()
     if user_query:
@@ -18,51 +22,83 @@ def create_user(user: schema.UserCreate, db: Session = Depends(database.get_db))
 
     hashed_pwd = utils.hash(user.password)
     user.password = hashed_pwd
-    user_data = {
-        "name": user.name,
-        "email": user.email,
-        "password": user.password,
-        "current_role": user.role,
-    }
-
+    user_data = user.model_dump()
     user_obj = models.User(**user_data)
     db.add(user_obj)
     db.commit()
     db.refresh(user_obj)
 
-    user_role_obj = models.Role(role=user.role, user_id=user_obj.id)
-    db.add(user_role_obj)
-    db.commit()
-
     return user_obj
 
 
-@router.put("/role")
-def update_role(
-    role: schema.UpdateRole,
+@router.post(
+    "/login",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.TokenResponse,
+)
+def login(
+    db: Session = Depends(database.get_db),
+    credentials: OAuth2PasswordRequestForm = Depends(),
+):
+    """route for user login"""
+    user_query = (
+        db.query(models.User).filter(models.User.email == credentials.username).first()
+    )
+    if not user_query:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid credentials"
+        )
+
+    if not utils.verify(credentials.password, user_query.password):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid credentials"
+        )
+
+    token = oauth2.create_token({"user_id": user_query.id})
+    return {"token": token, "token_type": "bearer"}
+
+
+@router.put(
+    "/me",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.UserResponse,
+)
+def update_me(
+    profile: schemas.ProfileUpdate,
     db: Session = Depends(database.get_db),
     current_user: int = Depends(oauth2.get_current_user),
 ):
-    """update user role"""
-    role_query = db.query(models.Role).filter(models.Role.user_id == current_user.id)
-
-    if not role_query.first():
+    """Update current user profile"""
+    user_query = db.query(models.User).filter(models.User.id == current_user.id).first()
+    if not user_query:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Role Not Found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+    profile_data = profile.model_dump(exclude_unset=True)
+    # update the profile
+
+    for key, value in profile_data.items():
+        setattr(user_query.profile, key, value)
+
+    db.commit()
+    db.refresh(user_query)
+    return user_query
+
+
+@router.get(
+    "/me",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.UserResponse,
+)
+def get_me(
+    db: Session = Depends(database.get_db),
+    current_user: int = Depends(oauth2.get_current_user),
+):
+    """Get current user profile"""
+    user = db.query(models.User).filter(models.User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
-    role_query.update(role.model_dump())
-    db.commit()
-    return {"message": "updated successfully"}
-
-
-@router.get("/me", response_model=schema.UserResponse)
-# I need you to create this route
-def get_profile(db: Session = Depends(database.get_db),
-                current_user: int = Depends(oauth2.get_current_user)):
-    """get specific user profile"""
-    profile_query = db.query(models.Profile).filter(models.Profile.user_id == current_user.id)
-    if not profile_query.first():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="profile not found")
-
-    return profile_query.first()
+    return user
